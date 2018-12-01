@@ -28,6 +28,7 @@ Vagrant.configure("2") do |config|
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
 
   config.vm.box = "ubuntu/xenial64"
+  config.disksize.size = '20GB'
 
   config.vm.network :forwarded_port, guest: 80, host: CONFIG['vagrant_port'], auto_correct: true
   config.vm.network "private_network", ip: CONFIG['vagrant_ip']
