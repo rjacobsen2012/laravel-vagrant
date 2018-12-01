@@ -59,7 +59,7 @@ if [ ! -e /etc/systemd/system/redis.service ]; then
     sed -i "s/supervised no/supervised systemd/g" /etc/redis/redis.conf > /dev/null 2>&1
     sed -i "s/#   supervised systemd      - no/#   supervised no      - no/g" /etc/redis/redis.conf > /dev/null 2>&1
     sed -i "s/dir .\//dir \/var\/lib\/redis/g" /etc/redis/redis.conf
-    cp /var/www/$folder_name/vendor/rjacobsen/laravel-vagrant/src/scripts/redis.service /etc/systemd/system/redis.service > /dev/null 2>&1
+    cp /var/www/$folder_name/setup/config/redis.service /etc/systemd/system/redis.service > /dev/null 2>&1
     sudo adduser --system --group --no-create-home redis > /dev/null 2>&1
     sudo mkdir /var/lib/redis > /dev/null 2>&1
     sudo chown redis:redis /var/lib/redis > /dev/null 2>&1
@@ -115,7 +115,7 @@ if [ "$mailcatcher" = "" ]; then
     sudo update-rc.d cron defaults > /dev/null 2>&1
     sudo sh -c "echo 'sendmail_path = /usr/bin/env $(which catchmail)' >> /etc/php/$php_version/mods-available/mailcatcher.ini"
     sudo phpenmod -v ALL -s ALL mailcatcher
-    sudo cp /var/www/$folder_name/vendor/rjacobsen/laravel-vagrant/src/mailcatcher.conf /etc/init/mailcatcher.conf > /dev/null 2>&1
+    sudo cp /var/www/$folder_name/setup/mailcatcher.conf /etc/init/mailcatcher.conf > /dev/null 2>&1
     sudo service php$php_version-fpm restart > /dev/null 2>&1
 else
     echo $'\n\033[33;33m '$now' ========> Mailcatcher installed... moving on'
@@ -130,7 +130,7 @@ apt-get install mysql-server-5.7 -y > /dev/null 2>&1
 
 now=$(date +"%T")
 echo $'\n\033[33;33m '$now' ========> Configuring Nginx...'
-cp /var/www/$folder_name/vagrant/config/nginx_vhost /etc/nginx/sites-available/$folder_name > /dev/null
+cp /var/www/$folder_name/setup/config/nginx_vhost /etc/nginx/sites-available/$folder_name > /dev/null
 
 sed -i "s/folder_name/$folder_name/g" /etc/nginx/sites-available/$folder_name
 sed -i "s/php_version/$php_version/g" /etc/nginx/sites-available/$folder_name
@@ -183,12 +183,12 @@ sed -i '/max_execution_time/c\max_execution_time = 0' /etc/php/$php_version/cli/
 
 mysql -uroot -p1234 -e"CREATE DATABASE $folder_name;"
 
-cp /var/www/$folder_name/vagrant/config/db_setup.sql /var/www/$folder_name/vagrant/config/db_setup_temp.sql
-sed -i "s/db_user/$db_user/g" /var/www/$folder_name/vagrant/config/db_setup_temp.sql
-sed -i "s/db_password/$db_password/g" /var/www/$folder_name/vagrant/config/db_setup_temp.sql
+cp /var/www/$folder_name/setup/config/db_setup.sql /var/www/$folder_name/setup/config/db_setup_temp.sql
+sed -i "s/db_user/$db_user/g" /var/www/$folder_name/setup/config/db_setup_temp.sql
+sed -i "s/db_password/$db_password/g" /var/www/$folder_name/setup/config/db_setup_temp.sql
 
-mysql -uroot -p1234 "mysql" < /var/www/$folder_name/vagrant/config/db_setup_temp.sql
-rm /var/www/$folder_name/vagrant/config/db_setup_temp.sql
+mysql -uroot -p1234 "mysql" < /var/www/$folder_name/setup/config/db_setup_temp.sql
+rm /var/www/$folder_name/setup/config/db_setup_temp.sql
 
 sudo perl -pi -w -e 's/bind-address/#bind-address/g;' /etc/mysql/mysql.conf.d/mysqld.cnf
 sudo service mysql restart > /dev/null 2>&1
@@ -205,9 +205,9 @@ else
     echo $'\n\033[33;33m '$now' ========> Composer installed... moving on'
 fi
 
-cp -r /var/www/$folder_name/vendor/rjacobsen/laravel-vagrant/src/server-setup /home/vagrant/
-cp -r /var/www/$folder_name/vendor/rjacobsen/laravel-vagrant/src/server-setup/.zshrc /home/vagrant/.zshrc
-cp -r /var/www/$folder_name/vendor/rjacobsen/laravel-vagrant/src/scripts/.vimrc /home/vagrant/.vimrc
+cp -r /var/www/$folder_name/setup/server-setup /home/vagrant/
+cp -r /var/www/$folder_name/setup/server-setup/.zshrc /home/vagrant/.zshrc
+cp -r /var/www/$folder_name/setup/scripts/.vimrc /home/vagrant/.vimrc
 
 zsh=`dpkg -l | grep -i zsh`
 
