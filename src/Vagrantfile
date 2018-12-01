@@ -4,13 +4,13 @@
 require 'yaml'
 require 'fileutils'
 
-$CONFIG_ERRORS = File.join(File.dirname(__FILE__), "setup/scripts/errors.rb")
+$CONFIG_ERRORS = File.join(File.dirname(__FILE__), "vendor/rjacobsen/laravel-vagrant/src/scripts/errors.rb")
 
 if File.exist?($CONFIG_ERRORS)
     require $CONFIG_ERRORS
 end
 
-$CONFIG_HANDLER = File.join(File.dirname(__FILE__), "setup/scripts/config_handler.rb")
+$CONFIG_HANDLER = File.join(File.dirname(__FILE__), "vendor/rjacobsen/laravel-vagrant/src/scripts/config_handler.rb")
 
 if File.exist?($CONFIG_HANDLER)
     require $CONFIG_HANDLER
@@ -18,7 +18,7 @@ end
 
 case ARGV[0]
 when "provision", "up"
-  system "./setup/pre-provision.sh"
+  system "./vendor/rjacobsen/laravel-vagrant/src/pre-provision.sh"
 else
   # do nothing
 end
@@ -52,7 +52,7 @@ Vagrant.configure("2") do |config|
     :inline => "(grep -q -E '^mesg n$' /root/.profile && sed -i 's/^mesg n$/tty -s \\&\\& mesg n/g' /root/.profile && echo 'Ignore the previous error about stdin not being a tty. Fixing it now...') || exit 0;"
 
   config.vm.provision "shell" do |s|
-    s.path = "setup/provision.sh"
+    s.path = "vendor/rjacobsen/laravel-vagrant/src/provision.sh"
     s.args = [
         CONFIG['folder_name'],
         CONFIG['vagrant_ip'],

@@ -14,11 +14,10 @@ class VagrantLoadServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/src/config/config.yaml.example' => base_path('vagrant/config/config.yaml'),
-            __DIR__.'/src/config/db_setup.sql' => base_path('vagrant/config/db_setup.sql'),
-            __DIR__.'/src/config/nginx_vhost' => base_path('vagrant/config/nginx_vhost'),
-            __DIR__.'/src/scripts/' => base_path('vagrant/scripts/'),
-            __DIR__.'/src/Vagrantfile' => base_path('Vagrantfile'),
+            __DIR__.'/../config/config.yaml.example' => base_path('vagrant/config/config.yaml'),
+            __DIR__.'/../config/db_setup.sql' => base_path('vagrant/config/db_setup.sql'),
+            __DIR__.'/../config/nginx_vhost' => base_path('vagrant/config/nginx_vhost'),
+            __DIR__.'/../Vagrantfile' => base_path('Vagrantfile'),
         ]);
     }
 
