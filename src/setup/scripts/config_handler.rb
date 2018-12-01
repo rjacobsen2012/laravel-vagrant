@@ -1,5 +1,5 @@
-if File.exists?("config.yaml")
-    CONFIG = YAML.load_file 'config.yaml'
+if File.exists?("vagrant_config.yaml")
+    CONFIG = YAML.load_file 'vagrant_config.yaml'
 end
 
 if CONFIG == ''
