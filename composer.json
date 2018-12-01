@@ -1,0 +1,30 @@
+{
+    "name": "laravel-vagrant",
+    "description": "Vagrant specifically designed for laravel",
+    "keywords":["vagrant", "laravel"],
+    "homepage": "https://bitbucket.org/rjacobsen2016/laravel-vagrant/src/master/",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Richard Jacobsen",
+            "homepage": "https://bitbucket.org/rjacobsen2016/laravel-vagrant/src/master/",
+            "email": "rjacobsen2009@gmail.com",
+            "role": "Owner"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "HelloWorld": "src/"
+        }
+    },    
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://rjacobsen2016@bitbucket.org/rjacobsen2016/laravel-vagrant.git"
+        }
+    ],
+    "minimum-stability": "dev"
+}

@@ -1,0 +1,7 @@
+CREATE USER 'db_user'@'localhost' IDENTIFIED BY 'db_password';
+GRANT ALL PRIVILEGES ON *.* TO 'db_user'@'localhost' WITH GRANT OPTION;
+CREATE USER 'db_user'@'127.0.0.1' IDENTIFIED BY 'db_password';
+GRANT ALL PRIVILEGES ON *.* TO 'db_user'@'127.0.0.1' WITH GRANT OPTION;
+CREATE USER 'db_user'@'%' IDENTIFIED BY 'db_password';
+GRANT ALL PRIVILEGES ON *.* TO 'db_user'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
