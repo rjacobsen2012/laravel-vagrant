@@ -1,5 +1,5 @@
 {
-    "name": "laravel-vagrant",
+    "name": "rjacobsen/laravel-vagrant",
     "description": "Vagrant specifically designed for laravel",
     "keywords":["vagrant", "laravel"],
     "homepage": "https://github.com/rjacobsen2012/laravel-vagrant",
