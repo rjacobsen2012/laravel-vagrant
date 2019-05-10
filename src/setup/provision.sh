@@ -5,240 +5,172 @@ vagrant_ip=$2
 db_user=$3
 db_password=$4
 vagrant_name=$5
-php_version=$6
 
-now=$(date +"%T")
-echo $'\n\033[33;33m '$now' ========> The provisioning process will take 10-15 minutes. Go grab a drink :)'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+RED='\033[0;31m'
 
-now=$(date +"%T")
-echo $'\n\033[33;33m '$now' ========> Provisioning virtual machine...'
-export LANGUAGE=en_US.UTF-8
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
+pwd=`pwd`
+home="/home/vagrant/${folder_name}"
 
-locale-gen en_US.UTF-8 > /dev/null 2>&1
-dpkg-reconfigure locales -f noninteractive > /dev/null 2>&1
+function echo_msg()
+{
+    NC='\033[0m'
+    now=$(date +"%T")
+    printf "\n$1${now} ========> $2...${NC} "
+}
 
-usermod -a -G www-data vagrant
+echo_msg ${GREEN} "The provisioning process will take about 5-10 minutes"
+sudo usermod -a -G www-data vagrant
 
-now=$(date +"%T")
-echo $'\n\033[33;33m '$now' ========> Adding ppa:ondrej/php...'
-add-apt-repository ppa:ondrej/php -y > /dev/null 2>&1
-apt-get update -y > /dev/null 2>&1
+echo_msg ${GREEN} "Provisioning virtual machine"
 
-now=$(date +"%T")
-echo $'\n\033[33;33m '$now' ========> Checking PHP...'
 phppresent=`which php`
-if [ "$phppresent" = "" ]; then
-    echo $'\n\033[33;33m '$now' ========> Adding php...'
-    apt-get install -y python-software-properties build-essential tcl > /dev/null 2>&1
-    apt-get update -y > /dev/null 2>&1
-    apt-get install -y php$php_version > /dev/null 2>&1
-    apt-get remove -y apache2 > /dev/null 2>&1
-    apt-get install -y php$php_version-common php$php_version-dev php$php_version-cli php$php_version-fpm curl php$php_version-curl php$php_version-gd mcrypt php-mcrypt php$php_version-mysql php$php_version-imap php$php_version-mbstring nginx > /dev/null 2>&1
-    apt-add-repository ppa:brightbox/ruby-ng-experimental -y > /dev/null 2>&1
-    apt-get update -y > /dev/null 2>&1
-    apt-get autoremove -y > /dev/null 2>&1
-else
-    echo $'\n\033[33;33m '$now' ========> php installed... moving on...'
+if [[ "$phppresent" = "" ]]; then
+    echo_msg ${GREEN} "Updating os"
+    sudo apt update -y > /dev/null 2>&1
+
+    echo_msg ${GREEN} "Upgrading os"
+    sudo apt upgrade -y > /dev/null 2>&1
+
+    echo_msg ${GREEN} "Installing php 7.2"
+    sudo apt install -y php > /dev/null 2>&1
+
+    echo_msg ${GREEN} "Installing php packages"
+    sudo install -y build-essential tcl libsqlite3-dev ruby-dev > /dev/null 2>&1
+    echo postfix postfix/mailname string ${home} | sudo debconf-set-selections
+    echo postfix postfix/main_mailer_type string 'Internet Site' | sudo debconf-set-selections
+    echo "mysql-server-5.7 mysql-server/root_password password $db_password" | sudo debconf-set-selections
+    echo "mysql-server-5.7 mysql-server/root_password_again password $db_password" | sudo debconf-set-selections
+    sudo apt install -y php-common php-dev php-cli php-fpm curl php-curl php-gd mcrypt php-mysql php-imap php-mbstring php-zip nginx php-bcmath php-xml chrpath libssl-dev libxft-dev libfreetype6 libfreetype6-dev redis-server php-redis postfix sshpass zsh php-xdebug mysql-server-5.7 build-essential libsqlite3-dev ruby-dev ruby php-sqlite3 > /dev/null 2>&1
+
+    echo_msg ${GREEN} "Removing apache"
+    sudo apt remove -y apache2 > /dev/null 2>&1
+
+    echo_msg ${GREEN} "Cleaning up after package install"
+    sudo apt autoremove -y > /dev/null 2>&1
+    sudo apt-add-repository ppa:brightbox/ruby-ng-experimental -y > /dev/null 2>&1
+    sudo apt update -y > /dev/null 2>&1
+    sudo sed -i '/memory_limit/c\memory_limit = -1' /etc/php/7.2/cli/php.ini
+    sudo sed -i '/max_execution_time/c\max_execution_time = 0' /etc/php/7.2/cli/php.ini
+    sudo cp ${home}/setup/config/xdebug.ini /etc/php/7.2/mods-available/withxdebug.ini
+    sudo cp ${home}/setup/config/noxdebug.ini /etc/php/7.2/mods-available/withoutxdebug.ini
+
+    echo_msg ${GREEN} "Configuring redis"
+    sudo systemctl enable redis-server.service > /dev/null 2>&1
+    sudo sed -i '/bind*/c\bind 0.0.0.0' /etc/redis/redis.conf
+    sudo sed -i '/timeout 0/c\#timeout 0' /etc/redis/redis.conf
+    sudo service redis-server restart > /dev/null 2>&1
 fi
 
-now=$(date +"%T")
-echo $'\n\033[33;33m '$now' ========> Checking Redis...'
-if [ ! -e /etc/systemd/system/redis.service ]; then
-    echo $'\n\033[33;33m '$now' ========> Adding Redis...'
-    cd /tmp
-    curl -O http://download.redis.io/redis-stable.tar.gz > /dev/null 2>&1
-    tar xzvf redis-stable.tar.gz > /dev/null 2>&1
-    cd redis-stable
-    make > /dev/null 2>&1
-    make test > /dev/null 2>&1
-    sudo make install > /dev/null 2>&1
-    sudo mkdir /etc/redis > /dev/null 2>&1
-    sudo cp /tmp/redis-stable/redis.conf /etc/redis > /dev/null 2>&1
-    sed -i "s/supervised no/supervised systemd/g" /etc/redis/redis.conf > /dev/null 2>&1
-    sed -i "s/#   supervised systemd      - no/#   supervised no      - no/g" /etc/redis/redis.conf > /dev/null 2>&1
-    sed -i "s/dir .\//dir \/var\/lib\/redis/g" /etc/redis/redis.conf
-    cp /var/www/$folder_name/setup/config/redis.service /etc/systemd/system/redis.service > /dev/null 2>&1
-    sudo adduser --system --group --no-create-home redis > /dev/null 2>&1
-    sudo mkdir /var/lib/redis > /dev/null 2>&1
-    sudo chown redis:redis /var/lib/redis > /dev/null 2>&1
-    sudo chmod 770 /var/lib/redis > /dev/null 2>&1
-    sudo systemctl start redis > /dev/null 2>&1
-    sudo systemctl enable redis > /dev/null 2>&1
-else
-    echo $'\n\033[33;33m '$now' ========> Redis installed... moving on...'
+if [[ ! -e /etc/default/phantomjs ]]; then
+    echo_msg ${GREEN} "Installing phantomjs"
+    export PHANTOM_JS="phantomjs-2.1.1-linux-x86_64" > /dev/null 2>&1
+    wget https://github.com/Medium/phantomjs/releases/download/v2.1.1/${PHANTOM_JS}.tar.bz2 > /dev/null 2>&1
+    sudo tar xvjf ${PHANTOM_JS}.tar.bz2 > /dev/null 2>&1
+    sudo mv ${PHANTOM_JS} /usr/local/share > /dev/null 2>&1
+    sudo ln -sf /usr/local/share/${PHANTOM_JS}/bin/phantomjs /usr/local/bin > /dev/null 2>&1
+    sudo touch /etc/default/phantomjs > /dev/null 2>&1
+    echo "WEBDRIVER_PORT=4444" > sudo /etc/default/phantomjs
 fi
 
-now=$(date +"%T")
-echo $'\n\033[33;33m '$now' ========> Checking if Redis is running...'
-redisstatus=`sudo systemctl status redis`
-if [[ $redisstatus = *"active (running)"* ]]; then
-    echo $'\n\033[33;33m '$now' ========> Redis installed and running!'
-else
-    echo $'\n\033[0;31m '$now' ========> *** There was a problem installing redis! ***'
-fi
-
-now=$(date +"%T")
-echo $'\n\033[33;33m '$now' ========> Checking GIT...'
-gitpresent=`which git`
-if [ "$gitpresent" = "" ]; then
-    echo $'\n\033[33;33m '$now' ========> Installing Git...'
-    apt-get install git -y > /dev/null 2>&1
-else
-    echo $'\n\033[33;33m '$now' ========> GIT installed... moving on...'
-fi
-
-postfix=`which postfix`
-
-now=$(date +"%T")
-if [ "$postfix" = "" ]; then
-    echo $'\n\033[33;33m '$now' ========> Installing Postfix, mailutils...'
-    echo postfix postfix/mailname string $folder_name | debconf-set-selections
-    echo postfix postfix/main_mailer_type string 'Internet Site' | debconf-set-selections
-    apt-get -qq install -y postfix > /dev/null 2>&1
-    service postfix reload > /dev/null 2>&1
-else
-    echo $'\n\033[33;33m '$now' ========> Postfix installed... moving on...'
-fi
-
-mailcatcher=`which mailcatcher`
-
-now=$(date +"%T")
-if [ "$mailcatcher" = "" ]; then
-    echo $'\n\033[33;33m '$now' ========> Installing Mailcatcher...'
-    apt-get -qq -f -y install libsqlite3-dev ruby1.9.1-dev > /dev/null 2>&1
-
-    sudo gem install mime-types --version "< 3" > /dev/null 2>&1
-    sudo gem install --conservative mailcatcher > /dev/null 2>&1
-    sudo sh -c "echo '@reboot root $(which mailcatcher) --ip=0.0.0.0' >> /etc/crontab"
+phpmailcatcher=`which mailcatcher`
+if [[ "$phpmailcatcher" = "" ]]; then
+    echo_msg ${GREEN} "Installing mailcatcher"
+    sudo service postfix reload > /dev/null 2>&1
+    sudo gem install mailcatcher --no-ri --no-rdoc > /dev/null 2>&1
+    echo "@reboot root $(which mailcatcher) --ip=0.0.0.0" >> sudo /etc/crontab
     sudo update-rc.d cron defaults > /dev/null 2>&1
-    sudo sh -c "echo 'sendmail_path = /usr/bin/env $(which catchmail)' >> /etc/php/$php_version/mods-available/mailcatcher.ini"
+    sudo touch /etc/php/7.2/mods-available/mailcatcher.ini
+    echo "sendmail_path = /usr/bin/env $(which catchmail) -f 'www-data@localhost'" >> sudo /etc/php/7.2/mods-available/mailcatcher.ini
     sudo phpenmod -v ALL -s ALL mailcatcher
-    sudo cp /var/www/$folder_name/setup/mailcatcher.conf /etc/init/mailcatcher.conf > /dev/null 2>&1
-    sudo service php$php_version-fpm restart > /dev/null 2>&1
-else
-    echo $'\n\033[33;33m '$now' ========> Mailcatcher installed... moving on'
+    sudo cp ${home}/setup/mailcatcher.conf /etc/init/mailcatcher.conf > /dev/null 2>&1
+    sudo service php7.2-fpm restart > /dev/null 2>&1
+    /usr/bin/env $(which mailcatcher) --ip=0.0.0.0 > /dev/null 2>&1
+    echo '@reboot root $(which mailcatcher) --ip=0.0.0.0' >> sudo /etc/crontab > /dev/null 2>&1
+    sudo update-rc.d cron defaults > /dev/null 2>&1
 fi
 
-now=$(date +"%T")
-echo $'\n\033[33;33m '$now' ========> Installing Mysql...'
-echo "mysql-server-5.7 mysql-server/root_password password $db_password" | debconf-set-selections
-echo "mysql-server-5.7 mysql-server/root_password_again password $db_password" | debconf-set-selections
-
-apt-get install mysql-server-5.7 -y > /dev/null 2>&1
-
-now=$(date +"%T")
-echo $'\n\033[33;33m '$now' ========> Configuring Nginx...'
-cp /var/www/$folder_name/setup/config/nginx_vhost /etc/nginx/sites-available/$folder_name > /dev/null
-
-sed -i "s/folder_name/$folder_name/g" /etc/nginx/sites-available/$folder_name
-sed -i "s/php_version/$php_version/g" /etc/nginx/sites-available/$folder_name
-
-ln -s /etc/nginx/sites-available/$folder_name /etc/nginx/sites-enabled/
-
-rm -rf /etc/nginx/sites-available/default
-
-service nginx restart > /dev/null 2>&1
-
-xdebug=`dpkg -l | grep -i php-xdebug`
-
-now=$(date +"%T")
-if [ "$xdebug" = "" ]; then
-    echo $'\n\033[33;33m '$now' ========> Installing Xdebug...'
-    sudo apt-get -qq install -y php-xdebug > /dev/null 2>&1
-
-cat << EOF | sudo tee -a /etc/php/$php_version/mods-available/xdebug.ini
-xdebug.scream=1
-xdebug.cli_color=1
-xdebug.show_local_vars=1
-xdebug.remote_enable=1
-xdebug.remote_handler=dbgp
-xdebug.remote_mode=req
-xdebug.remote_host=127.0.0.1
-xdebug.remote_port=9000
-xdebug.remote_autostart=0
-xdebug.remote_connect_back=0
-xdebug.max_nesting_level = 5000
-EOF
-else
-    echo $'\n\033[33;33m '$now' ========> Xdebug installed... moving on'
+phpcomposer=`which composer`
+if [[ "$phpcomposer" = "" ]]; then
+    echo_msg ${GREEN} "Installing composer"
+    wget https://getcomposer.org/download/1.0.0-alpha11/composer.phar > /dev/null 2>&1
+    sudo mv composer.phar /usr/bin/composer
+    sudo chmod +x /usr/bin/composer
+    echo "y" | sudo ufw enable > /dev/null 2>&1
+    sudo ufw allow "Nginx Full" > /dev/null 2>&1
+    sudo ufw allow "OpenSSH" > /dev/null 2>&1
+    sudo ufw allow "3306" > /dev/null 2>&1
+    sudo ufw allow "6379" > /dev/null 2>&1
+    sudo ufw allow "1025" > /dev/null 2>&1
+    sudo ufw allow "1080" > /dev/null 2>&1
+    sudo ufw allow "4444" > /dev/null 2>&1
 fi
 
-chmod -R o+w /var/www/$folder_name/storage
+sudo cp ${home}/setup/config/hosts /etc/hosts
+sudo sed -i "s/folder_name/${folder_name}/g" /etc/hosts
+sudo sed -i "s/vagrant_ip/${vagrant_ip}/g" /etc/hosts
 
-cd /var/www/$folder_name
+function loadEnv()
+{
+    cp ${home}/setup/config/.env${1} ${home}/.env${1}
+    sed -i "s/folder_name/$folder_name/g" ${home}/.env${1}
+    sed -i "s/vagrant_ip/$vagrant_ip/g" ${home}/.env${1}
+    sed -i "s/db_user/$db_user/g" ${home}/.env${1}
+    sed -i "s/db_password/$db_password/g" ${home}/.env${1}
+    sed -i "/APP_NAME/c\APP_NAME=\'$vagrant_name\'" ${home}/.env${1}
+    sed -i "/APP_URL/c\APP_URL=http://$folder_name.local" ${home}/.env${1}
+}
 
-sed -i "/DB_DATABASE/c\DB_DATABASE=$folder_name" /var/www/$folder_name/.env
-sed -i "/DB_HOST/c\DB_HOST=$vagrant_ip" /var/www/$folder_name/.env
-sed -i "/DB_USERNAME/c\DB_USERNAME=$db_user" /var/www/$folder_name/.env
-sed -i "/DB_PASSWORD/c\DB_PASSWORD=$db_password" /var/www/$folder_name/.env
-sed -i "/APP_NAME/c\APP_NAME=\'$vagrant_name\'" /var/www/$folder_name/.env
-sed -i "/APP_URL/c\APP_URL=http://$folder_name.local" /var/www/$folder_name/.env
+sudo chmod -R o+w ${home}/storage
 
-sudo php artisan key:generate > /dev/null 2>&1
+echo_msg ${GREEN} "Configuring application"
 
-sed -i '/memory_limit/c\memory_limit = -1' /etc/php/$php_version/cli/php.ini
-sed -i '/max_execution_time/c\max_execution_time = 0' /etc/php/$php_version/cli/php.ini
+cp ${home}/setup/config/db_setup.sql ${home}/setup/config/db_setup_temp.sql
+sed -i "s/db_user/$db_user/g" ${home}/setup/config/db_setup_temp.sql
+sed -i "s/db_password/$db_password/g" ${home}/setup/config/db_setup_temp.sql
 
-mysql -uroot -p1234 -e"CREATE DATABASE $folder_name;"
-
-cp /var/www/$folder_name/setup/config/db_setup.sql /var/www/$folder_name/setup/config/db_setup_temp.sql
-sed -i "s/db_user/$db_user/g" /var/www/$folder_name/setup/config/db_setup_temp.sql
-sed -i "s/db_password/$db_password/g" /var/www/$folder_name/setup/config/db_setup_temp.sql
-
-mysql -uroot -p1234 "mysql" < /var/www/$folder_name/setup/config/db_setup_temp.sql
-rm /var/www/$folder_name/setup/config/db_setup_temp.sql
+mysql -uroot -p"$db_password" "mysql" < ${home}/setup/config/db_setup_temp.sql > /dev/null 2>&1
+rm ${home}/setup/config/db_setup_temp.sql
 
 sudo perl -pi -w -e 's/bind-address/#bind-address/g;' /etc/mysql/mysql.conf.d/mysqld.cnf
 sudo service mysql restart > /dev/null 2>&1
 
-/usr/bin/env $(which mailcatcher) --ip=0.0.0.0 > /dev/null 2>&1
+cd ${home}
 
-now=$(date +"%T")
-if [ ! -f /usr/bin/composer ]; then
-    echo $'\n\033[33;33m '$now' ========> Installing Composer...'
-    wget https://getcomposer.org/download/1.0.0-alpha11/composer.phar > /dev/null 2>&1
-    mv composer.phar /usr/bin/composer
-    sudo chmod +x /usr/bin/composer
-else
-    echo $'\n\033[33;33m '$now' ========> Composer installed... moving on'
-fi
+composer install > /dev/null 2>&1
 
-cp -r /var/www/$folder_name/setup/server-setup /home/vagrant/
-cp -r /var/www/$folder_name/setup/server-setup/.zshrc /home/vagrant/.zshrc
-cp -r /var/www/$folder_name/setup/scripts/.vimrc /home/vagrant/.vimrc
+loadEnv
+php artisan key:generate > /dev/null 2>&1
+echo 'yes' | php artisan jwt:secret > /dev/null 2>&1
+php artisan cache:clear > /dev/null 2>&1
+php artisan config:clear > /dev/null 2>&1
 
-zsh=`dpkg -l | grep -i zsh`
+cd ${pwd}
 
-now=$(date +"%T")
-if [ "$zsh" = "" ]; then
-    echo $'\n\033[33;33m '$now' ========> Installing ZSH...'
-
-    sudo apt-get -qq install -y sshpass > /dev/null 2>&1
-    sudo apt-get -qq install -y zsh > /dev/null 2>&1
-    sudo perl -pi -w -e 's/bash/zsh/g' /etc/passwd
+if [[ ! -e /home/vagrant/.zshrc ]]; then
+    echo_msg ${GREEN} "Installing zsh"
+    cp -r ${home}/setup/server-setup /home/vagrant/
+    cp -r ${home}/setup/server-setup/.zshrc /home/vagrant/.zshrc
+    cp -r ${home}/setup/scripts/.vimrc /home/vagrant/.vimrc
+    sudo chown vagrant.vagrant /home/vagrant/.zshrc
     git clone git://github.com/robbyrussell/oh-my-zsh.git /home/vagrant/.oh-my-zsh > /dev/null 2>&1
-else
-    echo $'\n\033[33;33m '$now' ========> ZSH installed... moving on'
+    sudo perl -pi -w -e 's/bash/zsh/g' /etc/passwd
 fi
 
-swapsize=4000
-grep -q "swapfile" /etc/fstab
-if [ $? -ne 0 ]; then
-    echo $'\n\033[33;33m '$now' ========> Swapfile not found. Adding swapfile.n'
-    fallocate -l ${swapsize}M /swapfile
-    chmod 600 /swapfile
-    mkswap /swapfile
-    swapon /swapfile
-    echo '/swapfile none swap defaults 0 0' >> /etc/fstab
-else
-    echo $'\n\033[33;33m '$now' ========> Swapfile found... moving on'
+if [[ ! -e /etc/nginx/sites-available/${folder_name} ]]; then
+    echo_msg ${GREEN} "Configuring nginx"
+    sudo cp ${home}/setup/config/generic_vhost /etc/nginx/sites-available/${folder_name}
+    sudo sed -i "s/site_name/${folder_name}.local/g" /etc/nginx/sites-available/${folder_name}
+    sudo sed -i "s/folder_name/${folder_name}/g" /etc/nginx/sites-available/${folder_name}
+    sudo sed -i "s/php_version/7.2/g" /etc/nginx/sites-available/${folder_name}
+    sudo ln -s /etc/nginx/sites-available/${folder_name} /etc/nginx/sites-enabled/
+    sudo rm -rf /etc/nginx/sites-available/default
+    sudo rm /etc/nginx/sites-enabled/default
+    service nginx restart > /dev/null 2>&1
 fi
 
-df -h
-cat /proc/swaps
-cat /proc/meminfo | grep Swap
-
-now=$(date +"%T")
-echo $'\n\033[33;33m '$now' ========> Vagrant has been setup successfully'
+echo_msg ${GREEN} "Configuring google chromedriver"
+wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add - > /dev/null 2>&1
+sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+sudo apt update -y && sudo apt install -y google-chrome-stable xvfb > /dev/null 2>&1

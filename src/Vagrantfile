@@ -1,4 +1,7 @@
 # -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# -*- mode: ruby -*-
 #vi: set ft=ruby :
 
 require 'yaml'
@@ -17,23 +20,34 @@ if File.exist?($CONFIG_HANDLER)
 end
 
 case ARGV[0]
-when "provision", "up"
-  system "./setup/pre-provision.sh"
-else
-  # do nothing
+when "provision"
+    system "./setup/pre-provision.sh"
+    system "./setup/provision.sh"
+end
+
+case ARGV[0]
+when "up"
+    case ARGV[1]
+    when "--provision"
+        system "./setup/pre-provision.sh"
+        system "./setup/provision.sh"
+    else
+        system "./setup/pre-provision.sh"
+    end
 end
 
 Vagrant.configure("2") do |config|
 
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
-
-  config.vm.box = "ubuntu/xenial64"
+  config.vm.box = "ubuntu/bionic64"
   config.disksize.size = '20GB'
+  config.vm.box_check_update = true
 
   config.vm.network :forwarded_port, guest: 80, host: CONFIG['vagrant_port'], auto_correct: true
+  config.vm.network :forwarded_port, guest: 6379, host: 6379, auto_correct: true
   config.vm.network "private_network", ip: CONFIG['vagrant_ip']
 
-  config.vm.synced_folder "./", CONFIG['folder'], create: true, group: "www-data", owner: "www-data"
+  config.vm.synced_folder "./", "/home/vagrant/" + CONFIG['folder_name'], nfs: true, create: true
 
   config.vm.provision "file", source: "~/.gitconfig", destination: ".gitconfig"
   config.vm.provision "file", source: "~/.ssh/id_rsa", destination: ".ssh/id_rsa"
@@ -42,9 +56,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider :virtualbox do |vb|
     # Use VBoxManage to customize the VM. For example to change memory:
-    vb.customize ["modifyvm", :id, "--memory", "2024"]
+    vb.customize ["modifyvm", :id, "--memory", 4096]
     vb.name = CONFIG['vagrant_name']
-    vb.memory = 2024
   end
 
   config.vm.provision :shell,
@@ -58,8 +71,7 @@ Vagrant.configure("2") do |config|
         CONFIG['vagrant_ip'],
         CONFIG['db_user'],
         CONFIG['db_password'],
-        CONFIG['vagrant_name'],
-        CONFIG['php_version']
+        CONFIG['vagrant_name']
     ]
   end
 end

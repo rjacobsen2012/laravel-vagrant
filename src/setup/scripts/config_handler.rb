@@ -1,5 +1,5 @@
-if File.exists?("vagrant_config.yaml")
-    CONFIG = YAML.load_file 'vagrant_config.yaml'
+if File.exists?("config.yaml")
+    CONFIG = YAML.load_file 'config.yaml'
 end
 
 if CONFIG == ''
@@ -12,8 +12,6 @@ vagrant_port = CONFIG['vagrant_port']
 db_user = CONFIG['db_user']
 db_password = CONFIG['db_password']
 ssh_username = CONFIG['ssh_username']
-folder = CONFIG['folder']
-php_version = CONFIG['php_version']
 
 if vagrant_name.nil? || vagrant_name.empty?
     raise MissingConfiguration.new '"vagrant_name"'
@@ -37,8 +35,4 @@ end
 
 if ssh_username.nil? || ssh_username.empty?
     raise MissingConfiguration.new '"ssh_username"'
-end
-
-if folder.nil? || folder.empty?
-    raise MissingConfiguration.new '"folder"'
 end

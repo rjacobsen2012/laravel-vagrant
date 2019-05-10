@@ -1,10 +1,7 @@
-vagrant_name: 'Sample Vagrant'
-vagrant_ip: '10.0.0.101'
-vagrant_port: 4003
-folder: '/var/www/sample_vagrant'
-folder_name: 'sample_vagrant'
-ssh_username: 'your-username'
+vagrant_name: 'Lurn Local'
+vagrant_ip: '10.0.0.107'
+vagrant_port: 4007
+folder_name: 'lurn-central'
+ssh_username: 'yourusername'
 db_user: 'dev'
 db_password: '1234'
-# PHP versions available: 5.6, 7.0, 7.1, 7.2
-php_version: '7.2'
