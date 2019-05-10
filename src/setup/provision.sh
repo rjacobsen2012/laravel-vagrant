@@ -113,7 +113,7 @@ sudo sed -i "s/vagrant_ip/${vagrant_ip}/g" /etc/hosts
 
 function loadEnv()
 {
-    cp ${home}/setup/config/.env${1} ${home}/.env${1}
+    cp ${home}/setup/config/example.env${1} ${home}/.env${1}
     sed -i "s/folder_name/$folder_name/g" ${home}/.env${1}
     sed -i "s/vagrant_ip/$vagrant_ip/g" ${home}/.env${1}
     sed -i "s/db_user/$db_user/g" ${home}/.env${1}
