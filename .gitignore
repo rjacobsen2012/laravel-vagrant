@@ -3,3 +3,4 @@
 vendor
 vendor/*
 composer.lock
+src/setup/config/.DS_Store
