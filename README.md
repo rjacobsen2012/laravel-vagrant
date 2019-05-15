@@ -3,8 +3,7 @@
   
 Laravel Vagrant is a package to install a vagrant that can be used by laravel.  
   
-## What it gives you  
-- You can define the php version you wish to use in ``vagrant_config.yaml``  
+## What it gives you   
 - Installs  
   - `ubuntu/xenial64`  
   - `redis`  
@@ -16,6 +15,7 @@ Laravel Vagrant is a package to install a vagrant that can be used by laravel.
   - `xdebug`  
   - `composer`  
   - `zsh`  
+  - `php 7.2`
 - Stops all outgoing mail from the vagrant, and catches it with `mailcatcher`  
   
   
