@@ -22,18 +22,18 @@ Laravel Vagrant is a package to install a vagrant that can be used by laravel.
 ## Requirements  
 - virtualbox 5.2.22  
 - vagrant 2.2.2  
-- laravel 5.7  
+- laravel 5.7+  
   
 ## Installation  
   
 1. run ``composer require rjacobsen/laravel-vagrant``  
-2. run ``php artisan vendor:publish``  
+2. run ``php artisan vendor:publish`` and select the number corresponding to ``VagrantLoadServiceProvider``  
 3. add ``.vagrant`` to ``.gitignore``  
-4. add ``vagrant_config.yaml`` to ``.gitignore``  
-5. modify ``vagrant_config.yaml`` to your defined parameters  
+4. add ``config.yaml`` to ``.gitignore``  
+5. modify ``config.yaml`` to your defined parameters  
 6. run ``vagrant up``  
   
 ## Usage  
-- access your database at your selected ``vagrant_ip`` in your ``vagrant_config.yaml``  
+- access your database at your selected ``vagrant_ip`` in your ``config.yaml``  
 - set your host in ``/etc/hosts`` to point to the same ``vagrant_ip``  
 - access `mailcatcher` at your http://``vagrant_ip``:1080 (example: `http://10.0.0.110:1080`)
