@@ -5,13 +5,15 @@ vagrant_ip=$2
 db_user=$3
 db_password=$4
 vagrant_name=$5
+folder_path=$6
 
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 RED='\033[0;31m'
 
 pwd=`pwd`
-home="/home/vagrant/${folder_name}"
+home="${folder_path}"
+nginxpath="${folder_path//\//\\\/}"
 
 function echo_msg()
 {
@@ -162,6 +164,7 @@ if [[ ! -e /etc/nginx/sites-available/${folder_name} ]]; then
     echo_msg ${GREEN} "Configuring nginx"
     sudo cp ${home}/setup/config/generic_vhost /etc/nginx/sites-available/${folder_name}
     sudo sed -i "s/site_name/${folder_name}.local/g" /etc/nginx/sites-available/${folder_name}
+    sudo sed -i "s/folder_path/${nginxpath}/g" /etc/nginx/sites-available/${folder_name}
     sudo sed -i "s/folder_name/${folder_name}/g" /etc/nginx/sites-available/${folder_name}
     sudo sed -i "s/php_version/7.2/g" /etc/nginx/sites-available/${folder_name}
     sudo ln -s /etc/nginx/sites-available/${folder_name} /etc/nginx/sites-enabled/

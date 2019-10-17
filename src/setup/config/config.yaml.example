@@ -1,7 +1,6 @@
 vagrant_name: 'Vagrant App'
 vagrant_ip: '10.0.0.107'
 vagrant_port: 4007
-folder_name: 'app-name'
 ssh_username: 'yourusername'
 db_user: 'dev'
 db_password: '1234'
