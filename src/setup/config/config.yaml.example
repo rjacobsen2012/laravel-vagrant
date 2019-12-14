@@ -4,3 +4,10 @@ vagrant_port: 4007
 ssh_username: 'yourusername'
 db_user: 'dev'
 db_password: '1234'
+
+#optional parameters
+#folder_name: 'custom_name'
+#folder_path: 'path_to_directory'
+#php_version: '7.1'
+#phantomjs: 'no'
+#use_chromedriver: 'no'

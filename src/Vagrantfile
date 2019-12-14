@@ -44,10 +44,34 @@ else
     vagrant_name = CONFIG['vagrant_name']
 end
 
+if !CONFIG['folder_path']
+    folder_path = vagrant_folder_path
+else
+    folder_path = CONFIG['folder_path']
+end
+
 if !CONFIG['folder_name']
     folder_name = vagrant_folder_path.split('/').last
 else
     folder_name = CONFIG['folder_name']
+end
+
+if !CONFIG['php_version']
+    php_version = '7.2'
+else
+    php_version = CONFIG['php_version']
+end
+
+if !CONFIG['phantomjs']
+    phantomjs = 'yes'
+else
+    phantomjs = CONFIG['phantomjs']
+end
+
+if !CONFIG['use_chromedriver']
+    use_chromedriver = 'yes'
+else
+    use_chromedriver = CONFIG['use_chromedriver']
 end
 
 Vagrant.configure("2") do |config|
@@ -85,7 +109,10 @@ Vagrant.configure("2") do |config|
         CONFIG['db_user'],
         CONFIG['db_password'],
         vagrant_name,
-        vagrant_folder_path
+        folder_path,
+        php_version,
+        phantomjs,
+        use_chromedriver
     ]
   end
 end
