@@ -1,6 +1,6 @@
 <?php
 
-namespace Rjacobsen\Laravel\Vagrant\Providers;
+namespace Rjacobsen\Laravel\Vagrant\ServiceProviders;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -14,9 +14,9 @@ class VagrantLoadServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/../setup' => base_path('setup'),
-            __DIR__.'/../setup/config/config.yaml.example' => base_path('config.yaml'),
-            __DIR__.'/../Vagrantfile' => base_path('Vagrantfile'),
+            __DIR__ . '/../setup' => base_path('setup'),
+            __DIR__ . '/../setup/config/config.yaml.example' => base_path('config.yaml'),
+            __DIR__ . '/../Vagrantfile' => base_path('Vagrantfile'),
         ]);
     }
 

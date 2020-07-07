@@ -44,7 +44,7 @@
     },
     "laravel": {
       "providers": [
-        "Rjacobsen\\Laravel\\Vagrant\\Providers\\VagrantLoadServiceProvider"
+        "Rjacobsen\\Laravel\\Vagrant\\ServiceProviders\\VagrantLoadServiceProvider"
       ]
     }
   }
