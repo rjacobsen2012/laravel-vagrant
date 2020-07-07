@@ -15,14 +15,14 @@ Laravel Vagrant is a package to install a vagrant that can be used by laravel.
   - `xdebug`  
   - `composer`  
   - `zsh`  
-  - `php 7.2`
+  - `php 7.4`
 - Stops all outgoing mail from the vagrant, and catches it with `mailcatcher`  
   
   
 ## Requirements  
 - virtualbox 5.2.22  
 - vagrant 2.2.2  
-- laravel 5.7+  
+- laravel 5.1+  
   
 ## Installation  
   
