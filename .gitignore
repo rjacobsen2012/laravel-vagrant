@@ -3,7 +3,7 @@
 vendor
 vendor/*
 composer.lock
-src/setup/config/.DS_Store
-src/.env
-src/config.yaml
-src/ubuntu*
+Src/setup/config/.DS_Store
+Src/.env
+Src/config.yaml
+Src/ubuntu*
