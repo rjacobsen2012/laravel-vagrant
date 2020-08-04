@@ -30,12 +30,10 @@ sudo usermod -a -G www-data vagrant
 
 echo_msg ${GREEN} "Provisioning virtual machine"
 
-php_install_version="7.2"
-
 if [[ -z "${php_version}" ]]; then
-    php_install_version="${php_version}"
-else
     php_install_version="7.2"
+else
+    php_install_version="${php_version}"
 fi
 
 phppresent=`which php`
