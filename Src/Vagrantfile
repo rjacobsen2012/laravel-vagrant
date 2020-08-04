@@ -57,7 +57,7 @@ else
 end
 
 if !CONFIG['php_version']
-    php_version = '7.2'
+    php_version = "7.2"
 else
     php_version = CONFIG['php_version']
 end

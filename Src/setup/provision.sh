@@ -30,14 +30,12 @@ sudo usermod -a -G www-data vagrant
 
 echo_msg ${GREEN} "Provisioning virtual machine"
 
-php_install_version=php
+php_install_version="7.2"
 
-if [[ "${php_version}" = '7.2' ]]; then
+if [[ -z "${php_version}" ]]; then
+    php_install_version="${php_version}"
+else
     php_install_version="7.2"
-fi
-
-if [[ "${php_version}" = '7.1' ]]; then
-    php_install_version="7.1"
 fi
 
 phppresent=`which php`
@@ -48,13 +46,10 @@ if [[ "$phppresent" = "" ]]; then
     echo_msg ${GREEN} "Upgrading os"
     sudo apt-get upgrade -y > /dev/null 2>&1
 
-    if [[ "${php_version}" = '7.1' ]]; then
-        sudo apt-get install software-properties-common > /dev/null 2>&1
-        sudo add-apt-repository ppa:ondrej/php > /dev/null 2>&1
-        sudo apt-get update -y > /dev/null 2>&1
-    fi
-
-    echo_msg ${GREEN} "Installing php ${php_version}"
+    echo_msg ${GREEN} "Installing php ${php_install_version}"
+    sudo apt-get install software-properties-common > /dev/null 2>&1
+    sudo add-apt-repository ppa:ondrej/php > /dev/null 2>&1
+    sudo apt-get update -y > /dev/null 2>&1
     sudo apt-get install -y php"${php_install_version}" > /dev/null 2>&1
 
     echo_msg ${GREEN} "Installing php packages"
@@ -187,7 +182,7 @@ if [[ ! -e /etc/nginx/sites-available/${folder_name} ]]; then
     sudo sed -i "s/site_name/${folder_name}.local/g" /etc/nginx/sites-available/${folder_name}
     sudo sed -i "s/folder_path/${nginxpath}/g" /etc/nginx/sites-available/${folder_name}
     sudo sed -i "s/folder_name/${folder_name}/g" /etc/nginx/sites-available/${folder_name}
-    sudo sed -i "s/php_version/${php_version}/g" /etc/nginx/sites-available/${folder_name}
+    sudo sed -i "s/php_version/${php_install_version}/g" /etc/nginx/sites-available/${folder_name}
     sudo ln -s /etc/nginx/sites-available/${folder_name} /etc/nginx/sites-enabled/
     sudo rm -rf /etc/nginx/sites-available/default
     sudo rm /etc/nginx/sites-enabled/default
