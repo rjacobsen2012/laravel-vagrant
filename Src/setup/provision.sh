@@ -129,11 +129,11 @@ sudo sed -i "s/vagrant_ip/${vagrant_ip}/g" /etc/hosts
 
 function loadEnv()
 {
-    cp ${home}/setup/config/example.env${1} ${home}/.env${1}
-    sed -i "s/folder_name/$folder_name/g" ${home}/.env${1}
-    sed -i "s/vagrant_ip/$vagrant_ip/g" ${home}/.env${1}
-    sed -i "s/db_user/$db_user/g" ${home}/.env${1}
-    sed -i "s/db_password/$db_password/g" ${home}/.env${1}
+    cp ${home}/.env${1}.example ${home}/.env${1}
+    sed -i "/DB_HOST/c\DB_HOST=\'$vagrant_ip\'" ${home}/.env${1}
+    sed -i "/DB_PASSWORD/c\DB_PASSWORD=\'$db_password\'" ${home}/.env${1}
+    sed -i "/DB_USERNAME/c\DB_USERNAME=\'$db_user\'" ${home}/.env${1}
+    sed -i "/DB_DATABASE/c\DB_DATABASE=\'$folder_name\'" ${home}/.env${1}
     sed -i "/APP_NAME/c\APP_NAME=\'$vagrant_name\'" ${home}/.env${1}
     sed -i "/APP_URL/c\APP_URL=http://$folder_name.local" ${home}/.env${1}
 }
